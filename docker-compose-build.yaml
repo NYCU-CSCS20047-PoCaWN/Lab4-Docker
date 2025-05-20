@@ -274,6 +274,23 @@ services:
       - db
       - free5gc-nrf
 
+  gatekeeper-af:
+    container_name: gatekeeper
+    build:
+      context: ./gateKeeper
+    volumes:
+      - ./config/nfcfg.yaml:/free5gc/config/nfcfg.yaml
+      - ./cert:/free5gc/cert
+    expose:
+      - "8000"
+    command: sleep infinity
+    networks:
+      sbinet:
+        aliases:
+          - af.free5gc.org
+    depends_on:
+      - free5gc-nrf
+
 networks:
   sbinet:
     ipam:
