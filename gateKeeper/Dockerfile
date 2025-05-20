@@ -6,21 +6,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Golangci-lint 
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin
-
 RUN apt-get update && apt-get install -y net-tools iputils-ping jq
 
-WORKDIR /free5gc
+VOLUME [ "/free5gc/Lab4-AF" ]
 
-COPY Lab4-AF/ .
-RUN make
-
-# Config files volume
-VOLUME [ "/free5gc/config" ]
-
-# Certificates (if not using default) volume
-VOLUME [ "/free5gc/cert" ]
-
+WORKDIR /free5gc/Lab4-AF
 
 EXPOSE 8000

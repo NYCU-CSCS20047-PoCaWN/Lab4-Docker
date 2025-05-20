@@ -24,7 +24,7 @@ configuration:
   volumeLimitPDU: 10000
   volumeThresholdRate: 0.8
   cgf:
-    enable: false
+    enable: true
     hostIPv4: webui
     port: 2121
     listenPort: 2122

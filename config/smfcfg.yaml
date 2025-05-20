@@ -1,12 +1,10 @@
 info:
-  version: 1.0.8
+  version: 1.0.7
   description: SMF initial local configuration
 
 configuration:
   smfName: SMF # the name of this SMF
-  
-  # Service-based interface information
-  sbi: 
+  sbi: # Service-based interface information
     scheme: http # the protocol for sbi (http or https)
     registerIPv4: smf.free5gc.org # IP used to register to NRF
     bindingIPv4: smf.free5gc.org # IP used to bind the service
@@ -14,15 +12,11 @@ configuration:
     tls: # the local path of TLS key
       key: cert/smf.key # SMF TLS Certificate
       pem: cert/smf.pem # SMF TLS Private key
-  
-   # the SBI services provided by this SMF, refer to TS 29.502
-  serviceNameList:
+  serviceNameList: # the SBI services provided by this SMF, refer to TS 29.502
     - nsmf-pdusession # Nsmf_PDUSession service
     - nsmf-event-exposure # Nsmf_EventExposure service
     - nsmf-oam # OAM service
-  
-  # the S-NSSAI (Single Network Slice Selection Assistance Information) list supported by this SMF
-  snssaiInfos: 
+  snssaiInfos: # the S-NSSAI (Single Network Slice Selection Assistance Information) list supported by this AMF
     - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
         sst: 1 # Slice/Service Type (uinteger, range: 0~255)
         sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
@@ -39,22 +33,16 @@ configuration:
           dns: # the IP address of DNS
             ipv4: 8.8.8.8
             ipv6: 2001:4860:4860::8888
-  
-  # the list of PLMN IDs that this SMF belongs to (optional, remove this key when unnecessary)
-  plmnList: 
+  plmnList: # the list of PLMN IDs that this SMF belongs to (optional, remove this key when unnecessary)
     - mcc: 208 # Mobile Country Code (3 digits string, digit: 0~9)
       mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
   locality: area1 # Name of the location where a set of AMF, SMF, PCF and UPFs are located
-  
-  # the IP address of N4 interface on this SMF (PFCP)
-  pfcp: 
+  pfcp: # the IP address of N4 interface on this SMF (PFCP)
     # addr config is deprecated in smf config v1.0.3, please use the following config
     nodeID: smf.n4.org     # the Node ID of this SMF
     listenAddr: smf.n4.org # the IP/FQDN of N4 interface on this SMF (PFCP)
     externalAddr: smf.n4.org # the IP/FQDN of N4 interface on this SMF (PFCP)
-  
-  # list of userplane information
-  userplaneInformation: 
+  userplaneInformation: # list of userplane information
     upNodes: # information of userplane node (AN or UPF)
       gNB1: # the name of the node
         type: AN # the type of the node (AN or UPF)
@@ -84,42 +72,28 @@ configuration:
         interfaces: # Interface list for this UPF
           - interfaceType: N3 # the type of the interface (N3 or N9)
             endpoints: # the IP address of this N3/N9 interface on this UPF
-              - 140.113.208.88
+              - 10.100.3.100
             networkInstances: # Data Network Name (DNN)
               - internet
     links: # the topology graph of userplane, A and B represent the two nodes of each link
       - A: gNB1
         B: UPF
-  
   # retransmission timer for pdu session modification command
   t3591:
     enable: true # true or false
     expireTime: 16s # default is 6 seconds
     maxRetryTimes: 3 # the max number of retransmission
-  
   # retransmission timer for pdu session release command
   t3592:
     enable: true # true or false
     expireTime: 16s # default is 6 seconds
     maxRetryTimes: 3 # the max number of retransmission
-  
   nrfUri: http://nrf.free5gc.org:8000 # a valid URI of NRF
   nrfCertPem: cert/nrf.pem # NRF Certificate
-  urrPeriod: 600         # 10m    # default usage report period in seconds
-  # urrThreshold: 35000  # 35Kb   # default usage report threshold in bytes
-  urrThreshold: 40000
-  requestedUnit: 2000
-
-  # Dynamic Configuration for URR threshold base on NWDAF analytics (prefictions)
-  nwdaf:
-    enable: false         # true or false
-    cpuThreshold: 50      # CPU usage threshold in percentage
-    memoryThreshold: 50   # Memory usage threshold in percentage
-    loadThreshold: 50     # Load Level threshold (1 ~ 100)
-
-
-# Logging Configuration
-logger:
+  urrPeriod: 60      # default usage report period in seconds
+  urrThreshold: 1000 # default usage report threshold in bytes
+  requestedUnit: 1000
+logger: # log output setting
   enable: true # true or false
   level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
   reportCaller: false # enable the caller report or not, value: true or false

@@ -14,7 +14,7 @@ configuration:
       key: cert/af.key # NF TLS Private key
   nrfUri: http://nrf.free5gc.org:8000 # NRF URI
   nrfCertPem: cert/nrf.pem            # NRF Certificate
-  webUri: http://webui.free5gc.org:5000 
+  webUri: http://webui:5000/api
 
   # For testing, localhost is used
   # webUri: http://af.free5gc.org:8000/oam

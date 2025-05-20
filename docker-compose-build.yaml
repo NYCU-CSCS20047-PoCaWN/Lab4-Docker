@@ -10,8 +10,6 @@ services:
       - ./config/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
-    ports:
-      - "2152:2152/udp"
     networks:
       n3net:
         aliases:
@@ -27,10 +25,10 @@ services:
           - upf.free5gc.org
 
   n6gw:
-    container_name: n6server
+    container_name: n6gw
     build:
       context: ./n6gw
-    command: bash -c "./n6gw-iptables.sh && python3 /root/server.py"
+    command: bash -c "./n6gw-iptables.sh && sleep infinity"
     expose:
       - "2163"
     volumes:
@@ -84,8 +82,6 @@ services:
       - ./cert:/free5gc/cert
     environment:
       GIN_MODE: release
-    ports:
-      - "38412:38412/sctp"
     networks:
       sbinet:
         aliases:
@@ -236,11 +232,13 @@ services:
     container_name: webui
     build:
       context: ./webui
-    command: ./bin/webconsole -c ./config/webuicfg.yaml
+    volumes:
+      - ./webui/Lab4-Webconsole:/free5gc/webui
+      - ./config/webuicfg.yaml:/free5gc/webui/config/webuicfg.yaml
+      - ./cert:/free5gc/cert
+    command: bash -c "make && ./bin/webconsole -c ./config/webuicfg.yaml"
     expose:
       - "2121"
-    volumes:
-      - ./config/webuicfg.yaml:/free5gc/config/webuicfg.yaml
     environment:
       - GIN_MODE=release
     networks:
@@ -258,7 +256,8 @@ services:
     build:
       context: ./gateKeeper
     volumes:
-      - ./config/nfcfg.yaml:/free5gc/config/nfcfg.yaml
+      - ./gateKeeper/Lab4-AF:/free5gc/Lab4-AF
+      - ./config/nfcfg.yaml:/free5gc/Lab4-AF/config/nfcfg.yaml
       - ./cert:/free5gc/cert
     expose:
       - "8000"
@@ -271,6 +270,28 @@ services:
       - "8000:8000"
     depends_on:
       - free5gc-nrf
+
+  ueransim:
+    container_name: ueransim
+    image: free5gc/ueransim:v4.0.1
+    command: ./nr-gnb -c ./config/gnbcfg.yaml
+    volumes:
+      - ./config/gnbcfg.yaml:/ueransim/config/gnbcfg.yaml
+      - ./config/uecfg.yaml:/ueransim/config/uecfg.yaml
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun"
+    networks:
+      n2net:
+        aliases:
+          - gnb.n2.org
+      n3net:
+        aliases:
+          - gnb.n3.org
+    depends_on:
+      - free5gc-amf
+      - free5gc-upf
 
 networks:
   sbinet:

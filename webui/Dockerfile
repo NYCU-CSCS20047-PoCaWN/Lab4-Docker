@@ -1,7 +1,7 @@
 FROM golang:1.21.8-bullseye AS builder
 
 RUN apt-get update \
-    && apt-get -y install gcc cmake autoconf libtool pkg-config libmnl-dev libyaml-dev apt-transport-https ca-certificates
+    && apt-get -y install gcc cmake autoconf libtool pkg-config libmnl-dev libyaml-dev apt-transport-https ca-certificates sudo
 
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt update \
@@ -10,21 +10,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # Clean apt cache
 RUN apt-get clean
 
-WORKDIR free5gc
+VOLUME [ "/free5gc/webui"]
 
-COPY Lab4-Webconsole/ .
-
-RUN mkdir -p config/ public/
-
-RUN make
-
-
-# Config files volume
-VOLUME [ "/free5gc/config" ]
-
-# Certificates (if not using default) volume
-VOLUME [ "/free5gc/cert" ]
-
+WORKDIR /free5gc/webui
 
 # WebUI uses the port 5000
 EXPOSE 5000
