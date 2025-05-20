@@ -1,0 +1,6 @@
+[submodule "webui/Lab4-Webconsole"]
+	path = webui/Lab4-Webconsole
+	url = https://github.com/NYCU-CSCS20047-PoCaWN/Lab4-Webconsole.git
+[submodule "gateKeeper/Lab4-AF"]
+	path = gateKeeper/Lab4-AF
+	url = https://github.com/NYCU-CSCS20047-PoCaWN/Lab4-AF.git
