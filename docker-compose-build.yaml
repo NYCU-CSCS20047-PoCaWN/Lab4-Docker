@@ -214,8 +214,7 @@ services:
 
   free5gc-chf:
     container_name: chf
-    build:
-      context: ./chf
+    image: free5gc/chf:v4.0.1
     command: ./chf -c ./config/chfcfg.yaml
     expose:
       - "8000"
@@ -235,8 +234,9 @@ services:
 
   free5gc-webui:
     container_name: webui
-    image: free5gc/webui:v4.0.1
-    command: ./webui -c ./config/webuicfg.yaml
+    build:
+      context: ./webui
+    command: ./bin/webconsole -c ./config/webuicfg.yaml
     expose:
       - "2121"
     volumes:
@@ -249,27 +249,6 @@ services:
           - webui
     ports:
       - "5000:5000"
-    depends_on:
-      - db
-      - free5gc-nrf
-
-  free5gc-nwdaf:
-    container_name: nwdaf
-    build:
-      context: ./nwdaf
-    command: ./nwdaf -c ./config/nwdafcfg.yaml
-    expose:
-      - "8000"
-    volumes:
-      - ./config/nwdafcfg.yaml:/free5gc/config/nwdafcfg.yaml
-      - ./cert:/free5gc/cert
-    environment:
-      DB_URI: mongodb://db/free5gc
-      GIN_MODE: release
-    networks:
-      sbinet:
-        aliases:
-          - nwdaf.free5gc.org
     depends_on:
       - db
       - free5gc-nrf
