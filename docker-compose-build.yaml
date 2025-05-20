@@ -1,0 +1,320 @@
+services:
+  free5gc-upf:
+    container_name: upf
+    image: free5gc/upf:v4.0.1
+    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    environment:
+      GIN_MODE: release
+    volumes:
+      - ./config/upfcfg.yaml:/free5gc/config/upfcfg.yaml
+      - ./config/upf-iptables.sh:/free5gc/upf-iptables.sh
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "2152:2152/udp"
+    networks:
+      n3net:
+        aliases:
+          - upf.n3.org
+        ipv4_address: 10.100.3.100
+      n4net:
+        aliases:
+          - upf.n4.org
+      n6net:
+        ipv4_address: 10.100.6.100
+      sbinet:
+        aliases:
+          - upf.free5gc.org
+
+  n6gw:
+    container_name: n6server
+    build:
+      context: ./n6gw
+    command: bash -c "./n6gw-iptables.sh && python3 /root/server.py"
+    expose:
+      - "2163"
+    volumes:
+      - ./config/n6gw_iptables.sh:/root/n6gw-iptables.sh
+    cap_add:
+      - NET_ADMIN
+    networks:
+      n6net:
+        ipv4_address: 10.100.6.101
+
+  db:
+    container_name: mongodb
+    image: mongo
+    command: mongod --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - dbdata:/data/db
+    networks:
+      sbinet:
+        aliases:
+          - db
+
+  free5gc-nrf:
+    container_name: nrf
+    image: free5gc/nrf:v4.0.1
+    command: ./nrf -c ./config/nrfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/nrfcfg.yaml:/free5gc/config/nrfcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      DB_URI: mongodb://db/free5gc
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - nrf.free5gc.org
+    depends_on:
+      - db
+
+  free5gc-amf:
+    container_name: amf
+    image: free5gc/amf:v4.0.1
+    command: ./amf -c ./config/amfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/amfcfg.yaml:/free5gc/config/amfcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    ports:
+      - "38412:38412/sctp"
+    networks:
+      sbinet:
+        aliases:
+          - amf.free5gc.org
+      n2net:
+        aliases:
+          - amf.n2.org
+    depends_on:
+      - free5gc-nrf
+
+  free5gc-ausf:
+    container_name: ausf
+    image: free5gc/ausf:v4.0.1
+    command: ./ausf -c ./config/ausfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/ausfcfg.yaml:/free5gc/config/ausfcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - ausf.free5gc.org
+    depends_on:
+      - free5gc-nrf
+
+  free5gc-nssf:
+    container_name: nssf
+    image: free5gc/nssf:v4.0.1
+    command: ./nssf -c ./config/nssfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/nssfcfg.yaml:/free5gc/config/nssfcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - nssf.free5gc.org
+    depends_on:
+      - free5gc-nrf
+
+  free5gc-pcf:
+    container_name: pcf
+    image: free5gc/pcf:v4.0.1
+    command: ./pcf -c ./config/pcfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/pcfcfg.yaml:/free5gc/config/pcfcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - pcf.free5gc.org
+    depends_on:
+      - free5gc-nrf
+
+  free5gc-smf:
+    container_name: smf
+    image: free5gc/smf:v4.0.1
+    command: ./smf -c ./config/smfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/smfcfg.yaml:/free5gc/config/smfcfg.yaml
+      - ./config/uerouting.yaml:/free5gc/config/uerouting.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - smf.free5gc.org
+      n4net:
+        aliases:
+          - smf.n4.org
+    depends_on:
+      - free5gc-nrf
+      - free5gc-upf
+
+  free5gc-udm:
+    container_name: udm
+    image: free5gc/udm:v4.0.1
+    command: ./udm -c ./config/udmcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/udmcfg.yaml:/free5gc/config/udmcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - udm.free5gc.org
+    depends_on:
+      - db
+      - free5gc-nrf
+
+  free5gc-udr:
+    container_name: udr
+    image: free5gc/udr:v4.0.1
+    command: ./udr -c ./config/udrcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/udrcfg.yaml:/free5gc/config/udrcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      DB_URI: mongodb://db/free5gc
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - udr.free5gc.org
+    depends_on:
+      - db
+      - free5gc-nrf
+
+  free5gc-chf:
+    container_name: chf
+    build:
+      context: ./chf
+    command: ./chf -c ./config/chfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/chfcfg.yaml:/free5gc/config/chfcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      DB_URI: mongodb://db/free5gc
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - chf.free5gc.org
+    depends_on:
+      - db
+      - free5gc-nrf
+
+  free5gc-webui:
+    container_name: webui
+    image: free5gc/webui:v4.0.1
+    command: ./webui -c ./config/webuicfg.yaml
+    expose:
+      - "2121"
+    volumes:
+      - ./config/webuicfg.yaml:/free5gc/config/webuicfg.yaml
+    environment:
+      - GIN_MODE=release
+    networks:
+      sbinet:
+        aliases:
+          - webui
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - free5gc-nrf
+
+  free5gc-nwdaf:
+    container_name: nwdaf
+    build:
+      context: ./nwdaf
+    command: ./nwdaf -c ./config/nwdafcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ./config/nwdafcfg.yaml:/free5gc/config/nwdafcfg.yaml
+      - ./cert:/free5gc/cert
+    environment:
+      DB_URI: mongodb://db/free5gc
+      GIN_MODE: release
+    networks:
+      sbinet:
+        aliases:
+          - nwdaf.free5gc.org
+    depends_on:
+      - db
+      - free5gc-nrf
+
+networks:
+  sbinet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.163.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-sbi
+
+  n2net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.2.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-n2
+
+  n3net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.3.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-n3
+
+  n4net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.4.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-n4
+
+  n6net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.6.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-n6
+      com.docker.network.container_iface_prefix: dn
+
+volumes:
+  dbdata:

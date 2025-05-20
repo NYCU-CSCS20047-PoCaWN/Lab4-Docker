@@ -1,0 +1,65 @@
+info:
+  version: 1.0.5
+  description: NWDAF initial local configuration
+  
+configuration:
+  nwdafName: NWDAF # the name of this NWDAF
+  sbi: # Service-based interface information
+    scheme: http # the protocol for sbi (http or https)
+    bindingIPv4: nwdaf.free5gc.org  # IP used to bind the service
+    registerIPv4: nwdaf.free5gc.org # IP used to register to NRF
+    port: 8000 # Port used to bind the service
+    cert: # the local path of TLS key
+      pem: cert/nwdaf.pem # NF TLS Certificate
+      key: cert/nwdaf.key # NF TLS Private key
+  serviceNameList: # the SBI services provided by this NWDAF, refer to TS 29.520
+    - nnwdaf-analyticsinfo
+    - nnwdaf-datamanagement
+    - nnwdaf-eventssubscription
+    - nnwdaf-mlmodelprovision
+  nrfUri: http://nrf.free5gc.org:8000 # NRF URI
+  nrfCertPem: cert/nrf.pem            # NRF Certificate
+  
+  # MTLF Configuration
+  mtlfType: flask # the type of MTLF, value: flask
+  flask:
+    endpoint: http://140.113.208.76:8888
+    NFs: # To determine which NFs' data to be sent to MTLF
+      - CHF
+      - SMF
+      - UPF
+      # - AMF
+      # - NRF
+
+  # MongoDB Configuration
+  dbConnectorType: mongodb 
+  mongodb:
+    name: nwdaf                    # Database name in MongoDB
+    url: mongodb://db:27017 # URL of MongoDB
+  
+  # Collector Configuration
+  collector:
+    interval: 10 # seconds
+    # Enable analytics is present
+    # Support Analytics:
+    #   - NfLoad 
+    nfLoad:
+      ratio: 0.9
+      cpu: 0.4   # CPU + MEM + GORUNTINE must equal 1.0
+      mem: 0.4   # The weight for Load Level Calulation
+      goroutine: 0.2 # The weight for Load Level Calulation
+      maxGoroutine: 5000 # The evaluation max goroutine for each NF
+      NFs:
+        smf: true
+        chf: true
+        upf: true
+        amf: false
+        nrf: false
+        udm: false
+
+
+logger: # log output setting
+  enable: true # true or false
+  level: debug # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+  reportCaller: false # enable the caller report or not, value: true or false
+  
