@@ -267,6 +267,8 @@ services:
       sbinet:
         aliases:
           - af.free5gc.org
+    ports:
+      - "8000:8000"
     depends_on:
       - free5gc-nrf
 
